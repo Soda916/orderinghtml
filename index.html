@@ -212,6 +212,20 @@
             gap: 0.6rem;
         }
 
+        .toolbar-block--inline {
+            flex-direction: row;
+            gap: 1rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1 1 160px;
+        }
+
         .toolbar-block label {
             font-weight: 600;
             font-size: 0.95rem;
@@ -374,6 +388,15 @@
             <div class="menu-grid" id="quick-grid"></div>
 
             <div class="toolbar">
+                <div class="toolbar-block toolbar-block--inline">
+                    <div class="toolbar-field">
+                        <label for="order-number">外帶單號</label>
+                        <input id="order-number" class="order-number-input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="請輸入單號">
+                    </div>
+                    <div class="toolbar-field">
+                        <label>環保餐具</label>
+                        <button type="button" id="eco-toggle" class="toggle-btn" aria-pressed="false">未自備</button>
+                    </div>
                 <div class="toolbar-block">
                     <label for="order-number">外帶單號</label>
                     <input id="order-number" class="order-number-input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="請輸入單號">

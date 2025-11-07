@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>外帶點餐系統</title>
+    <style>
+        :root {
+            --green: #2f9e66;
+            --green-dark: #1f6f44;
+            --background: #f5f7fa;
+            --panel: #ffffff;
+            --danger: #e43d3d;
+            --text-dark: #1f2933;
+            --text-light: #6b7280;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--background);
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        h1 {
+            margin: 0 0 1.5rem;
+            font-size: 2rem;
+            letter-spacing: 0.05em;
+        }
+
+        .app {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 1.5rem 1.5rem 3rem;
+        }
+
+        .panel {
+            background: var(--panel);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 16px 36px rgba(31, 41, 51, 0.1);
+        }
+
+        .menu-board {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.6rem;
+            border: 1px solid #e5e9f0;
+            border-radius: 16px;
+            padding: 1.5rem 1.75rem;
+            background: #f9fbff;
+            margin-bottom: 2rem;
+        }
+
+        .menu-board__category {
+            flex: 1 1 220px;
+            min-width: 200px;
+        }
+
+        .menu-board__title {
+            margin: 0 0 0.75rem;
+            font-size: 1.1rem;
+            color: var(--green-dark);
+            letter-spacing: 0.06em;
+        }
+
+        .menu-board__list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .menu-board__item {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 0.98rem;
+        }
+
+        .menu-board__item span:last-child {
+            font-weight: 600;
+        }
+
+        .menu-board__note {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .section-title {
+            margin: 0 0 1.2rem;
+            font-size: 1.15rem;
+            letter-spacing: 0.05em;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .menu-item {
+            background: #f1f5f9;
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            border: 2px solid transparent;
+            transition: border-color 0.15s ease, transform 0.15s ease;
+        }
+
+        .menu-item:hover {
+            border-color: var(--green);
+            transform: translateY(-2px);
+        }
+
+        .menu-item__name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .menu-item__price {
+            color: var(--green-dark);
+            font-size: 0.95rem;
+        }
+
+        .menu-item__actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .menu-item__btn {
+            flex: 1;
+            padding: 0.55rem 0.6rem;
+            border-radius: 10px;
+            border: none;
+            background: var(--green);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.15s ease;
+        }
+
+        .menu-item__btn:hover,
+        .menu-item__btn:focus-visible {
+            background: var(--green-dark);
+            transform: translateY(-1px);
+            outline: none;
+        }
+
+        .menu-item__btn--cotton {
+            flex: 0 0 auto;
+            min-width: 60px;
+            background: #ffffff;
+            color: var(--green-dark);
+            border: 2px solid var(--green);
+        }
+
+        .menu-item__btn--cotton:hover,
+        .menu-item__btn--cotton:focus-visible {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .menu-item__note {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .toolbar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0 1.5rem;
+        }
+
+        .toolbar-block {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 1rem;
+            box-shadow: 0 10px 20px rgba(31, 41, 51, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .toolbar-block label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .order-number-input {
+            width: 100%;
+            padding: 0.5rem 0.7rem;
+            font-size: 1.4rem;
+            text-align: center;
+            border-radius: 10px;
+            border: 2px solid #d6dce5;
+            transition: border-color 0.15s ease;
+        }
+
+        .order-number-input:focus {
+            border-color: var(--green);
+            outline: none;
+        }
+
+        .toggle-btn {
+            border-radius: 10px;
+            padding: 0.65rem 0.75rem;
+            font-weight: 600;
+            border: 2px solid var(--green);
+            color: var(--green-dark);
+            background: #fff;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .toggle-btn.active {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .totals {
+            display: grid;
+            gap: 0.4rem;
+            font-size: 0.95rem;
+        }
+
+        .totals span {
+            font-weight: 600;
+            color: var(--green-dark);
+        }
+
+        .copy-btn {
+            align-self: stretch;
+            border: none;
+            border-radius: 12px;
+            padding: 0.85rem;
+            background: var(--green);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.15s ease;
+        }
+
+        .copy-btn:hover,
+        .copy-btn:focus-visible {
+            background: var(--green-dark);
+            transform: translateY(-1px);
+            outline: none;
+        }
+
+        .order-section {
+            margin-top: 1rem;
+        }
+
+        .order-section h2 {
+            margin: 0 0 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 10px 24px rgba(31, 41, 51, 0.08);
+        }
+
+        th, td {
+            padding: 0.9rem 0.8rem;
+            text-align: left;
+        }
+
+        thead {
+            background: #e9f4ed;
+            color: var(--green-dark);
+            font-weight: 600;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f7fafc;
+        }
+
+        .quantity {
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        .remove-btn:hover,
+        .remove-btn:focus-visible {
+            transform: scale(1.1);
+            outline: none;
+        }
+
+        .placeholder-row td {
+            text-align: center;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .status-message {
+            margin-top: 1rem;
+            min-height: 1.4rem;
+            color: var(--green-dark);
+            font-weight: 600;
+        }
+
+        @media (max-width: 640px) {
+            .panel {
+                padding: 1.5rem;
+            }
+
+            .menu-item {
+                padding: 0.9rem;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="app">
+        <h1>外帶點餐系統</h1>
+        <section class="panel">
+            <div class="menu-board" id="menu-board"></div>
+
+            <h2 class="section-title">快速點餐</h2>
+            <div class="menu-grid" id="quick-grid"></div>
+
+            <div class="toolbar">
+                <div class="toolbar-block">
+                    <label for="order-number">外帶單號</label>
+                    <input id="order-number" class="order-number-input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="請輸入單號">
+                </div>
+                <div class="toolbar-block">
+                    <label>環保餐具</label>
+                    <button type="button" id="eco-toggle" class="toggle-btn" aria-pressed="false">未自備</button>
+                </div>
+                <div class="toolbar-block">
+                    <label>金額</label>
+                    <div class="totals">
+                        <div>小計：<span id="subtotal">NT$0</span></div>
+                        <div>環保折抵：<span id="discount">-NT$0</span></div>
+                        <div>應收金額：<span id="payable">NT$0</span></div>
+                    </div>
+                </div>
+                <div class="toolbar-block">
+                    <label>複製訂單</label>
+                    <button type="button" id="copy-button" class="copy-btn">複製並清空</button>
+                </div>
+            </div>
+
+            <section class="order-section">
+                <h2>訂單明細</h2>
+                <table aria-live="polite">
+                    <thead>
+                        <tr>
+                            <th scope="col">品項</th>
+                            <th scope="col">單價</th>
+                            <th scope="col">數量</th>
+                            <th scope="col" class="text-right">小計</th>
+                            <th scope="col" class="text-right">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="order-body"></tbody>
+                </table>
+                <div id="status-message" class="status-message" aria-live="polite"></div>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        const menuData = [
+            {
+                category: "鬆餅",
+                note: "加棉花糖 +5",
+                boardEntries: [
+                    { label: "原味", price: "40" },
+                    { label: "蜂蜜", price: "45" },
+                    { label: "草莓", price: "45" },
+                    { label: "巧克力", price: "50" }
+                ],
+                items: [
+                    { id: "waffle-original", name: "原味鬆餅", price: 40, allowCotton: true },
+                    { id: "waffle-honey", name: "蜂蜜鬆餅", price: 45, allowCotton: true },
+                    { id: "waffle-strawberry", name: "草莓鬆餅", price: 45, allowCotton: true },
+                    { id: "waffle-chocolate", name: "巧克力鬆餅", price: 50, allowCotton: true }
+                ]
+            },
+            {
+                category: "陶喆餅乾",
+                boardEntries: [
+                    { label: "一片", price: "25" },
+                    { label: "兩片", price: "40" }
+                ],
+                items: [
+                    { id: "cookie-single", name: "陶喆餅乾（一片）", price: 25 },
+                    { id: "cookie-double", name: "陶喆餅乾（兩片）", price: 40 }
+                ]
+            },
+            {
+                category: "飲料",
+                boardEntries: [
+                    { label: "雪碧／可樂", price: "35" },
+                    { label: "紅茶／綠茶", price: "30" },
+                    { label: "泰奶", price: "75" }
+                ],
+                items: [
+                    { id: "drink-sprite", name: "雪碧", price: 35 },
+                    { id: "drink-coke", name: "可樂", price: 35 },
+                    { id: "drink-black-tea", name: "紅茶", price: 30 },
+                    { id: "drink-green-tea", name: "綠茶", price: 30 },
+                    { id: "drink-thai-milk", name: "泰奶", price: 75 }
+                ]
+            }
+        ];
+
+        const menuBoard = document.getElementById("menu-board");
+        const quickGrid = document.getElementById("quick-grid");
+        const orderBody = document.getElementById("order-body");
+        const orderNumberInput = document.getElementById("order-number");
+        const ecoToggle = document.getElementById("eco-toggle");
+        const copyButton = document.getElementById("copy-button");
+        const statusMessage = document.getElementById("status-message");
+        const subtotalEl = document.getElementById("subtotal");
+        const discountEl = document.getElementById("discount");
+        const payableEl = document.getElementById("payable");
+
+        const itemLookup = new Map();
+        const orderItems = new Map();
+        let ecoSelfProvided = false;
+
+        function formatCurrency(value) {
+            return `NT$${value}`;
+        }
+
+        function renderMenuBoard() {
+            menuBoard.innerHTML = "";
+            menuData.forEach(({ category, boardEntries, note }) => {
+                const section = document.createElement("section");
+                section.className = "menu-board__category";
+
+                const title = document.createElement("h3");
+                title.className = "menu-board__title";
+                title.textContent = category;
+                section.appendChild(title);
+
+                const list = document.createElement("ul");
+                list.className = "menu-board__list";
+
+                boardEntries.forEach(entry => {
+                    const item = document.createElement("li");
+                    item.className = "menu-board__item";
+                    const nameSpan = document.createElement("span");
+                    nameSpan.textContent = entry.label;
+                    const priceSpan = document.createElement("span");
+                    priceSpan.textContent = entry.price;
+                    item.appendChild(nameSpan);
+                    item.appendChild(priceSpan);
+                    list.appendChild(item);
+                });
+
+                section.appendChild(list);
+
+                if (note) {
+                    const noteEl = document.createElement("div");
+                    noteEl.className = "menu-board__note";
+                    noteEl.textContent = note;
+                    section.appendChild(noteEl);
+                }
+
+                menuBoard.appendChild(section);
+            });
+        }
+
+        function renderQuickMenu() {
+            quickGrid.innerHTML = "";
+            menuData.forEach(({ items }) => {
+                items.forEach(item => {
+                    itemLookup.set(item.id, item);
+                    const card = document.createElement("div");
+                    card.className = "menu-item";
+
+                    const name = document.createElement("div");
+                    name.className = "menu-item__name";
+                    name.textContent = item.name;
+                    card.appendChild(name);
+
+                    const price = document.createElement("div");
+                    price.className = "menu-item__price";
+                    price.textContent = formatCurrency(item.price);
+                    card.appendChild(price);
+
+                    if (item.allowCotton) {
+                        const note = document.createElement("div");
+                        note.className = "menu-item__note";
+                        note.textContent = "加棉 +NT$5";
+                        card.appendChild(note);
+                    }
+
+                    const actions = document.createElement("div");
+                    actions.className = "menu-item__actions";
+
+                    const addBtn = document.createElement("button");
+                    addBtn.type = "button";
+                    addBtn.className = "menu-item__btn";
+                    addBtn.textContent = "加入";
+                    addBtn.dataset.id = item.id;
+                    addBtn.dataset.cotton = "false";
+                    actions.appendChild(addBtn);
+
+                    if (item.allowCotton) {
+                        const cottonBtn = document.createElement("button");
+                        cottonBtn.type = "button";
+                        cottonBtn.className = "menu-item__btn menu-item__btn--cotton";
+                        cottonBtn.textContent = "+棉";
+                        cottonBtn.dataset.id = item.id;
+                        cottonBtn.dataset.cotton = "true";
+                        actions.appendChild(cottonBtn);
+                    }
+
+                    card.appendChild(actions);
+                    quickGrid.appendChild(card);
+                });
+            });
+        }
+
+        function getOrderKey(id, cotton) {
+            return cotton ? `${id}-cotton` : id;
+        }
+
+        function getDisplayName(item, cotton) {
+            return cotton ? `${item.name}+棉` : item.name;
+        }
+
+        function addItem(id, cotton) {
+            const baseItem = itemLookup.get(id);
+            if (!baseItem) {
+                return;
+            }
+
+            const key = getOrderKey(id, cotton);
+            const price = baseItem.price + (cotton ? 5 : 0);
+            const displayName = getDisplayName(baseItem, cotton);
+
+            if (!orderItems.has(key)) {
+                orderItems.set(key, {
+                    id,
+                    cotton,
+                    name: displayName,
+                    unitPrice: price,
+                    quantity: 0
+                });
+            }
+
+            const entry = orderItems.get(key);
+            entry.quantity += 1;
+            orderItems.set(key, entry);
+            renderOrder();
+            updateTotals();
+            setStatus(`已加入「${displayName}」。`);
+        }
+
+        function removeItem(key) {
+            if (orderItems.has(key)) {
+                const removed = orderItems.get(key);
+                orderItems.delete(key);
+                renderOrder();
+                updateTotals();
+                setStatus(`已移除「${removed.name}」。`);
+            }
+        }
+
+        function renderOrder() {
+            orderBody.innerHTML = "";
+
+            if (orderItems.size === 0) {
+                const row = document.createElement("tr");
+                row.className = "placeholder-row";
+                const cell = document.createElement("td");
+                cell.colSpan = 5;
+                cell.textContent = "目前尚未加入任何品項。";
+                row.appendChild(cell);
+                orderBody.appendChild(row);
+                return;
+            }
+
+            orderItems.forEach((item, key) => {
+                const row = document.createElement("tr");
+
+                const nameCell = document.createElement("td");
+                nameCell.textContent = item.name;
+                row.appendChild(nameCell);
+
+                const priceCell = document.createElement("td");
+                priceCell.textContent = formatCurrency(item.unitPrice);
+                row.appendChild(priceCell);
+
+                const quantityCell = document.createElement("td");
+                quantityCell.className = "quantity";
+                quantityCell.textContent = item.quantity;
+                row.appendChild(quantityCell);
+
+                const subtotalCell = document.createElement("td");
+                subtotalCell.className = "text-right";
+                subtotalCell.textContent = formatCurrency(item.unitPrice * item.quantity);
+                row.appendChild(subtotalCell);
+
+                const actionCell = document.createElement("td");
+                actionCell.className = "text-right";
+                const removeBtn = document.createElement("button");
+                removeBtn.type = "button";
+                removeBtn.className = "remove-btn";
+                removeBtn.textContent = "✕";
+                removeBtn.title = `刪除${item.name}`;
+                removeBtn.setAttribute("aria-label", `刪除${item.name}`);
+                removeBtn.dataset.key = key;
+                actionCell.appendChild(removeBtn);
+                row.appendChild(actionCell);
+
+                orderBody.appendChild(row);
+            });
+        }
+
+        function calculateTotals() {
+            let subtotal = 0;
+            orderItems.forEach(item => {
+                subtotal += item.unitPrice * item.quantity;
+            });
+
+            const discount = ecoSelfProvided && subtotal > 0 ? 5 : 0;
+            const payable = Math.max(subtotal - discount, 0);
+            return { subtotal, discount, payable };
+        }
+
+        function updateTotals() {
+            const { subtotal, discount, payable } = calculateTotals();
+            subtotalEl.textContent = formatCurrency(subtotal);
+            discountEl.textContent = `-NT$${discount}`;
+            payableEl.textContent = formatCurrency(payable);
+        }
+
+        function setStatus(message) {
+            statusMessage.textContent = message;
+        }
+
+        function buildSummaryText() {
+            const lines = [];
+            const orderNumber = orderNumberInput.value.trim();
+            if (orderNumber) {
+                lines.push(`外帶單號：${orderNumber}`);
+            }
+            lines.push(`環保餐具：${ecoSelfProvided ? "自備" : "需提供"}`);
+
+            orderItems.forEach(item => {
+                lines.push(`${item.name} x${item.quantity}`);
+            });
+
+            return lines.join("\n");
+        }
+
+        function resetOrder() {
+            orderItems.clear();
+            renderOrder();
+            updateTotals();
+        }
+
+        async function copySummary() {
+            if (orderItems.size === 0) {
+                setStatus("沒有可複製的品項。請先加入餐點。");
+                return;
+            }
+
+            const summary = buildSummaryText();
+            const { payable, discount } = calculateTotals();
+
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(summary);
+                } else {
+                    throw new Error("Clipboard API not available");
+                }
+            } catch (err) {
+                const textarea = document.createElement("textarea");
+                textarea.value = summary;
+                textarea.style.position = "fixed";
+                textarea.style.top = "-9999px";
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                try {
+                    document.execCommand("copy");
+                } catch (copyErr) {
+                    setStatus("複製失敗，請手動複製訂單內容。");
+                    document.body.removeChild(textarea);
+                    return;
+                }
+                document.body.removeChild(textarea);
+            }
+
+            resetOrder();
+            const discountText = discount > 0 ? "（已含環保折抵）" : "";
+            setStatus(`已複製訂單內容，應收金額 ${formatCurrency(payable)}${discountText}。`);
+        }
+
+        function initEvents() {
+            quickGrid.addEventListener("click", event => {
+                const target = event.target;
+                if (target instanceof HTMLButtonElement && target.dataset.id) {
+                    const id = target.dataset.id;
+                    const cotton = target.dataset.cotton === "true";
+                    addItem(id, cotton);
+                }
+            });
+
+            orderBody.addEventListener("click", event => {
+                const target = event.target;
+                if (target instanceof HTMLButtonElement && target.dataset.key) {
+                    removeItem(target.dataset.key);
+                }
+            });
+
+            ecoToggle.addEventListener("click", () => {
+                ecoSelfProvided = !ecoSelfProvided;
+                ecoToggle.classList.toggle("active", ecoSelfProvided);
+                ecoToggle.textContent = ecoSelfProvided ? "已自備" : "未自備";
+                ecoToggle.setAttribute("aria-pressed", ecoSelfProvided.toString());
+                updateTotals();
+                setStatus(ecoSelfProvided ? "顧客自備餐具，已折抵 5 元。" : "顧客需要餐具，不再折抵。");
+            });
+
+            copyButton.addEventListener("click", copySummary);
+        }
+
+        renderMenuBoard();
+        renderQuickMenu();
+        renderOrder();
+        updateTotals();
+        initEvents();
+    </script>
+</body>
+</html>

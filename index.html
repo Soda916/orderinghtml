@@ -468,6 +468,12 @@
         const resetOrder = () => {
             orderMap.clear();
             renderOrder();
+        const calcTotal = () => {
+            let total = 0;
+            orderMap.forEach(item => {
+                total += item.price * item.quantity;
+            });
+            return total;
         };
 
         const renderOrder = () => {
@@ -556,6 +562,12 @@
                     index += 1;
                 });
             }
+                    lines.push(`${index}. ${item.name} x${item.quantity} - $${item.price * item.quantity}`);
+                    index += 1;
+                });
+            }
+
+            lines.push(`合計：$${total}`);
             return lines.join('\n');
         };
 

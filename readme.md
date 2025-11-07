@@ -20,3 +20,5 @@
 ## 使用方式
 
 以瀏覽器開啟 `index.html` 即可使用，無需額外安裝。
+
+如需保留此次介面版本，可參考 `backups/index-original.html` 中備份的原始程式碼。

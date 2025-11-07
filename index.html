@@ -562,12 +562,6 @@
                     index += 1;
                 });
             }
-                    lines.push(`${index}. ${item.name} x${item.quantity} - $${item.price * item.quantity}`);
-                    index += 1;
-                });
-            }
-
-            lines.push(`合計：$${total}`);
             return lines.join('\n');
         };
 

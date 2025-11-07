@@ -314,7 +314,7 @@
             <div class="toolbar-section">
                 <label>環保餐具</label>
                 <div id="ecoToggle" class="toggle" role="switch" aria-checked="false" tabindex="0">
-                    <span class="toggle__label">不需要</span>
+                    <span class="toggle__label">未自備</span>
                     <span class="toggle__status">OFF</span>
                 </div>
             </div>
@@ -397,6 +397,23 @@
 
         const orderMap = new Map();
 
+        const calcSubtotal = () => {
+            let total = 0;
+            orderMap.forEach(item => {
+                total += item.price * item.quantity;
+            });
+            return total;
+        };
+
+        const getEcoStatus = () => ecoToggle.classList.contains('active');
+
+        const getTotals = () => {
+            const subtotal = calcSubtotal();
+            const discount = getEcoStatus() && subtotal > 0 ? 5 : 0;
+            const payable = Math.max(0, subtotal - discount);
+            return { subtotal, discount, payable };
+        };
+
         const renderMenu = () => {
             menuData.forEach(section => {
                 const header = document.createElement('div');
@@ -448,6 +465,9 @@
             renderOrder();
         };
 
+        const resetOrder = () => {
+            orderMap.clear();
+            renderOrder();
         const calcTotal = () => {
             let total = 0;
             orderMap.forEach(item => {
@@ -515,18 +535,19 @@
                 orderBody.appendChild(row);
             });
 
-            const total = calcTotal();
-            summaryTotal.textContent = `$${total}`;
-            grandTotal.textContent = `$${total}`;
-            statusText.textContent = `已點 ${orderMap.size} 項，共 ${total} 元`;
+            const { subtotal, discount, payable } = getTotals();
+            summaryTotal.textContent = `$${payable}`;
+            grandTotal.textContent = `$${payable}`;
+            if (discount > 0) {
+                statusText.textContent = `已點 ${orderMap.size} 項，共 ${subtotal} 元，折抵 $${discount} 後應收 ${payable} 元`;
+            } else {
+                statusText.textContent = `已點 ${orderMap.size} 項，共 ${payable} 元`;
+            }
         };
-
-        const getEcoStatus = () => ecoToggle.classList.contains('active');
 
         const buildCopyText = () => {
             const orderNumber = orderNumberInput.value.trim();
-            const ecoStatusText = getEcoStatus() ? '需要環保餐具' : '不需要環保餐具';
-            const total = calcTotal();
+            const ecoStatusText = getEcoStatus() ? '已自備環保餐具' : '未自備環保餐具';
             const lines = [];
             lines.push(orderNumber ? `外帶單號：${orderNumber}` : '外帶單號：尚未輸入');
             lines.push(ecoStatusText);
@@ -537,6 +558,10 @@
             } else {
                 let index = 1;
                 orderMap.forEach(item => {
+                    lines.push(`${index}. ${item.name} x${item.quantity}`);
+                    index += 1;
+                });
+            }
                     lines.push(`${index}. ${item.name} x${item.quantity} - $${item.price * item.quantity}`);
                     index += 1;
                 });
@@ -558,8 +583,9 @@
             ecoToggle.classList.toggle('active');
             const active = getEcoStatus();
             ecoToggle.setAttribute('aria-checked', active ? 'true' : 'false');
-            ecoToggle.querySelector('.toggle__label').textContent = active ? '需要' : '不需要';
+            ecoToggle.querySelector('.toggle__label').textContent = active ? '已自備' : '未自備';
             ecoToggle.querySelector('.toggle__status').textContent = active ? 'ON' : 'OFF';
+            renderOrder();
         });
 
         ecoToggle.addEventListener('keydown', (event) => {
@@ -571,9 +597,11 @@
 
         copyBtn.addEventListener('click', async () => {
             const text = buildCopyText();
+            const { payable } = getTotals();
             try {
                 await navigator.clipboard.writeText(text);
-                showToast('訂單內容已複製，應收金額 $' + calcTotal());
+                showToast('訂單內容已複製，應收金額 $' + payable);
+                resetOrder();
             } catch (err) {
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
@@ -583,7 +611,8 @@
                 textarea.select();
                 try {
                     document.execCommand('copy');
-                    showToast('訂單內容已複製，應收金額 $' + calcTotal());
+                    showToast('訂單內容已複製，應收金額 $' + payable);
+                    resetOrder();
                 } catch (err2) {
                     showToast('無法複製，請手動複製內容');
                 }

@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>外帶點餐系統</title>
+    <style>
+        :root {
+            --primary: #2b9b5a;
+            --primary-dark: #1f6f40;
+            --accent: #f5f5f5;
+            --danger: #e54848;
+            --text-dark: #202020;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background: #f0f2f5;
+            color: var(--text-dark);
+        }
+
+        h1 {
+            margin: 0 0 1rem;
+            font-size: 1.8rem;
+            letter-spacing: 0.08rem;
+        }
+
+        .app {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .panel {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+
+        .menu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border-radius: 14px;
+            background: var(--accent);
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+            text-align: center;
+        }
+
+        .menu-item:hover,
+        .menu-item:focus-visible {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 16px rgba(43, 155, 90, 0.22);
+            outline: none;
+        }
+
+        .menu-item__name {
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+            font-size: 1.05rem;
+        }
+
+        .menu-item__price {
+            color: var(--primary-dark);
+            font-size: 0.95rem;
+        }
+
+        .toolbar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+            align-items: center;
+        }
+
+        .toolbar-section {
+            background: #fff;
+            border-radius: 14px;
+            padding: 1rem;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toolbar-section label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .order-number-input {
+            font-size: 1.4rem;
+            padding: 0.4rem 0.6rem;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            text-align: center;
+            transition: border-color 0.15s ease;
+        }
+
+        .order-number-input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.8rem;
+            border-radius: 10px;
+            border: 2px solid var(--primary);
+            color: var(--primary-dark);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease;
+            user-select: none;
+        }
+
+        .toggle.active {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .primary-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.15s ease;
+        }
+
+        .primary-btn:hover,
+        .primary-btn:focus-visible {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            outline: none;
+        }
+
+        .order-table-wrapper {
+            margin-top: 1.5rem;
+            background: #fff;
+            border-radius: 18px;
+            padding: 1rem;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fb;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        th, td {
+            padding: 0.75rem 0.5rem;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8f9fb;
+        }
+
+        .quantity-controls {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .quantity-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: background 0.15s ease;
+        }
+
+        .quantity-btn:hover,
+        .quantity-btn:focus-visible {
+            background: var(--primary-dark);
+            outline: none;
+        }
+
+        .remove-btn {
+            border: none;
+            background: var(--danger);
+            color: #fff;
+            padding: 0.4rem 0.7rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .remove-btn:hover,
+        .remove-btn:focus-visible {
+            opacity: 0.8;
+            transform: translateY(-1px);
+            outline: none;
+        }
+
+        .empty-hint {
+            text-align: center;
+            color: #757575;
+            padding: 1.5rem 0;
+        }
+
+        .summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .total {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .status {
+            font-size: 0.9rem;
+            color: #3b3b3b;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(32, 32, 32, 0.92);
+            color: #fff;
+            padding: 0.75rem 1.2rem;
+            border-radius: 999px;
+            font-size: 0.95rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translate(-50%, -10px);
+        }
+
+        @media (max-width: 600px) {
+            .app {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .menu-grid {
+                grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            }
+
+            th, td {
+                font-size: 0.88rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <h1>外帶點餐系統</h1>
+        <section class="panel">
+            <h2 style="margin-top:0">菜單</h2>
+            <div class="menu-grid" id="menu"></div>
+        </section>
+
+        <div class="toolbar">
+            <div class="toolbar-section">
+                <label for="orderNumber">外帶單號</label>
+                <input type="text" inputmode="numeric" pattern="\\d*" id="orderNumber" class="order-number-input" placeholder="請輸入號碼" autocomplete="off">
+            </div>
+            <div class="toolbar-section">
+                <label>環保餐具</label>
+                <div id="ecoToggle" class="toggle" role="switch" aria-checked="false" tabindex="0">
+                    <span class="toggle__label">未自備</span>
+                    <span class="toggle__status">OFF</span>
+                </div>
+            </div>
+            <div class="toolbar-section">
+                <label>總金額</label>
+                <div class="total" id="grandTotal">$0</div>
+                <button class="primary-btn" id="copyBtn">複製訂單</button>
+            </div>
+        </div>
+
+        <div class="order-table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:35%">品項</th>
+                        <th style="width:15%">單價</th>
+                        <th style="width:25%">數量</th>
+                        <th style="width:15%">小計</th>
+                        <th style="width:10%"></th>
+                    </tr>
+                </thead>
+                <tbody id="orderBody">
+                    <tr class="empty-row">
+                        <td colspan="5" class="empty-hint">尚未點餐，請從上方菜單選擇。</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="summary">
+                <div class="status" id="statusText">等待點餐...</div>
+                <div class="total">應收金額：<span id="summaryTotal">$0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">已複製到剪貼簿！</div>
+
+    <script>
+        const menuData = [
+            {
+                category: "鬆餅",
+                items: [
+                    { name: "原味鬆餅", price: 40 },
+                    { name: "原味鬆餅+棉", price: 45 },
+                    { name: "蜂蜜鬆餅", price: 45 },
+                    { name: "蜂蜜鬆餅+棉", price: 50 },
+                    { name: "草莓鬆餅", price: 45 },
+                    { name: "草莓鬆餅+棉", price: 50 },
+                    { name: "巧克力鬆餅", price: 50 },
+                    { name: "巧克力鬆餅+棉", price: 55 }
+                ]
+            },
+            {
+                category: "陶喆餅乾",
+                items: [
+                    { name: "陶喆餅乾（一片）", price: 25 },
+                    { name: "陶喆餅乾（兩片）", price: 40 }
+                ]
+            },
+            {
+                category: "飲料",
+                items: [
+                    { name: "雪碧", price: 35 },
+                    { name: "可樂", price: 35 },
+                    { name: "紅茶", price: 30 },
+                    { name: "綠茶", price: 30 },
+                    { name: "泰奶", price: 75 }
+                ]
+            }
+        ];
+
+        const menuContainer = document.getElementById('menu');
+        const orderBody = document.getElementById('orderBody');
+        const summaryTotal = document.getElementById('summaryTotal');
+        const grandTotal = document.getElementById('grandTotal');
+        const statusText = document.getElementById('statusText');
+        const orderNumberInput = document.getElementById('orderNumber');
+        const ecoToggle = document.getElementById('ecoToggle');
+        const copyBtn = document.getElementById('copyBtn');
+        const toast = document.getElementById('toast');
+
+        const orderMap = new Map();
+
+        const calcSubtotal = () => {
+            let total = 0;
+            orderMap.forEach(item => {
+                total += item.price * item.quantity;
+            });
+            return total;
+        };
+
+        const getEcoStatus = () => ecoToggle.classList.contains('active');
+
+        const getTotals = () => {
+            const subtotal = calcSubtotal();
+            const discount = getEcoStatus() && subtotal > 0 ? 5 : 0;
+            const payable = Math.max(0, subtotal - discount);
+            return { subtotal, discount, payable };
+        };
+
+        const renderMenu = () => {
+            menuData.forEach(section => {
+                const header = document.createElement('div');
+                header.textContent = section.category;
+                header.style.gridColumn = '1 / -1';
+                header.style.fontWeight = '700';
+                header.style.fontSize = '1.05rem';
+                header.style.color = 'var(--primary-dark)';
+                header.style.marginTop = '0.5rem';
+                header.style.marginBottom = '-0.2rem';
+                menuContainer.appendChild(header);
+
+                section.items.forEach(item => {
+                    const button = document.createElement('button');
+                    button.className = 'menu-item';
+                    button.innerHTML = `
+                        <span class="menu-item__name">${item.name}</span>
+                        <span class="menu-item__price">$${item.price}</span>
+                    `;
+                    button.addEventListener('click', () => addItem(item));
+                    button.setAttribute('type', 'button');
+                    menuContainer.appendChild(button);
+                });
+            });
+        };
+
+        const addItem = (item) => {
+            const existing = orderMap.get(item.name);
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                orderMap.set(item.name, { ...item, quantity: 1 });
+            }
+            renderOrder();
+        };
+
+        const updateQuantity = (itemName, delta) => {
+            const record = orderMap.get(itemName);
+            if (!record) return;
+            record.quantity += delta;
+            if (record.quantity <= 0) {
+                orderMap.delete(itemName);
+            }
+            renderOrder();
+        };
+
+        const removeItem = (itemName) => {
+            orderMap.delete(itemName);
+            renderOrder();
+        };
+
+        const resetOrder = () => {
+            orderMap.clear();
+            renderOrder();
+        };
+
+        const renderOrder = () => {
+            orderBody.innerHTML = '';
+            if (orderMap.size === 0) {
+                const row = document.createElement('tr');
+                row.className = 'empty-row';
+                const cell = document.createElement('td');
+                cell.colSpan = 5;
+                cell.className = 'empty-hint';
+                cell.textContent = '尚未點餐，請從上方菜單選擇。';
+                row.appendChild(cell);
+                orderBody.appendChild(row);
+                summaryTotal.textContent = '$0';
+                grandTotal.textContent = '$0';
+                statusText.textContent = '等待點餐...';
+                return;
+            }
+
+            orderMap.forEach((item) => {
+                const row = document.createElement('tr');
+
+                const nameCell = document.createElement('td');
+                nameCell.textContent = item.name;
+
+                const priceCell = document.createElement('td');
+                priceCell.textContent = `$${item.price}`;
+
+                const quantityCell = document.createElement('td');
+                const controls = document.createElement('div');
+                controls.className = 'quantity-controls';
+                const minusBtn = document.createElement('button');
+                minusBtn.type = 'button';
+                minusBtn.className = 'quantity-btn';
+                minusBtn.textContent = '−';
+                minusBtn.addEventListener('click', () => updateQuantity(item.name, -1));
+                const count = document.createElement('span');
+                count.textContent = item.quantity;
+                const plusBtn = document.createElement('button');
+                plusBtn.type = 'button';
+                plusBtn.className = 'quantity-btn';
+                plusBtn.textContent = '+';
+                plusBtn.addEventListener('click', () => updateQuantity(item.name, 1));
+                controls.append(minusBtn, count, plusBtn);
+                quantityCell.appendChild(controls);
+
+                const subtotalCell = document.createElement('td');
+                subtotalCell.textContent = `$${item.price * item.quantity}`;
+
+                const removeCell = document.createElement('td');
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'remove-btn';
+                removeBtn.textContent = '✕';
+                removeBtn.addEventListener('click', () => removeItem(item.name));
+                removeCell.appendChild(removeBtn);
+
+                row.append(nameCell, priceCell, quantityCell, subtotalCell, removeCell);
+                orderBody.appendChild(row);
+            });
+
+            const { subtotal, discount, payable } = getTotals();
+            summaryTotal.textContent = `$${payable}`;
+            grandTotal.textContent = `$${payable}`;
+            if (discount > 0) {
+                statusText.textContent = `已點 ${orderMap.size} 項，共 ${subtotal} 元，折抵 $${discount} 後應收 ${payable} 元`;
+            } else {
+                statusText.textContent = `已點 ${orderMap.size} 項，共 ${payable} 元`;
+            }
+        };
+
+        const buildCopyText = () => {
+            const orderNumber = orderNumberInput.value.trim();
+            const ecoStatusText = getEcoStatus() ? '已自備環保餐具' : '未自備環保餐具';
+            const lines = [];
+            lines.push(orderNumber ? `外帶單號：${orderNumber}` : '外帶單號：尚未輸入');
+            lines.push(ecoStatusText);
+            lines.push('訂單內容：');
+
+            if (orderMap.size === 0) {
+                lines.push('（尚未點餐）');
+            } else {
+                let index = 1;
+                orderMap.forEach(item => {
+                    lines.push(`${index}. ${item.name} x${item.quantity}`);
+                    index += 1;
+                });
+            }
+            return lines.join('\n');
+        };
+
+        const showToast = (message) => {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 1800);
+        };
+
+        ecoToggle.addEventListener('click', () => {
+            ecoToggle.classList.toggle('active');
+            const active = getEcoStatus();
+            ecoToggle.setAttribute('aria-checked', active ? 'true' : 'false');
+            ecoToggle.querySelector('.toggle__label').textContent = active ? '已自備' : '未自備';
+            ecoToggle.querySelector('.toggle__status').textContent = active ? 'ON' : 'OFF';
+            renderOrder();
+        });
+
+        ecoToggle.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                ecoToggle.click();
+            }
+        });
+
+        copyBtn.addEventListener('click', async () => {
+            const text = buildCopyText();
+            const { payable } = getTotals();
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('訂單內容已複製，應收金額 $' + payable);
+                resetOrder();
+            } catch (err) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('訂單內容已複製，應收金額 $' + payable);
+                    resetOrder();
+                } catch (err2) {
+                    showToast('無法複製，請手動複製內容');
+                }
+                document.body.removeChild(textarea);
+            }
+        });
+
+        renderMenu();
+        renderOrder();
+    </script>
+</body>
+</html>

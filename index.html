@@ -43,61 +43,6 @@
             padding: 1.5rem;
         }
 
-        .menu-board {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            background: #f8fafc;
-            border-radius: 14px;
-            padding: 1.25rem 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid #e5e7eb;
-        }
-
-        .menu-board__category {
-            flex: 1 1 220px;
-            min-width: 200px;
-        }
-
-        .menu-board__category h3 {
-            margin: 0 0 0.75rem;
-            font-size: 1.1rem;
-            color: var(--primary-dark);
-            letter-spacing: 0.05rem;
-        }
-
-        .menu-board__list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: grid;
-            gap: 0.45rem;
-        }
-
-        .menu-board__item {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            font-size: 0.98rem;
-        }
-
-        .menu-board__item span:last-child {
-            font-weight: 600;
-        }
-
-        .menu-board__note {
-            margin-top: 0.6rem;
-            font-size: 0.9rem;
-            color: #6b7280;
-        }
-
-        .menu-actions-title {
-            margin: 0 0 1rem;
-            font-size: 1rem;
-            color: #374151;
-            letter-spacing: 0.05rem;
-        }
-
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -343,19 +288,6 @@
                 font-size: 1.5rem;
             }
 
-            .menu-board {
-                padding: 1rem;
-                gap: 1rem;
-            }
-
-            .menu-board__category h3 {
-                font-size: 1rem;
-            }
-
-            .menu-board__item {
-                font-size: 0.92rem;
-            }
-
             .menu-grid {
                 grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             }
@@ -371,36 +303,6 @@
         <h1>外帶點餐系統</h1>
         <section class="panel">
             <h2 style="margin-top:0">菜單</h2>
-            <div class="menu-board" aria-label="販賣項目總覽">
-                <div class="menu-board__category">
-                    <h3>鬆餅</h3>
-                    <ul class="menu-board__list">
-                        <li class="menu-board__item"><span>原味</span><span>$40</span></li>
-                        <li class="menu-board__item"><span>蜂蜜</span><span>$45</span></li>
-                        <li class="menu-board__item"><span>草莓</span><span>$45</span></li>
-                        <li class="menu-board__item"><span>巧克力</span><span>$50</span></li>
-                    </ul>
-                    <p class="menu-board__note">加棉花糖 +$5</p>
-                </div>
-                <div class="menu-board__category">
-                    <h3>陶喆餅乾</h3>
-                    <ul class="menu-board__list">
-                        <li class="menu-board__item"><span>一片</span><span>$25</span></li>
-                        <li class="menu-board__item"><span>兩片</span><span>$40</span></li>
-                    </ul>
-                </div>
-                <div class="menu-board__category">
-                    <h3>飲料</h3>
-                    <ul class="menu-board__list">
-                        <li class="menu-board__item"><span>雪碧</span><span>$35</span></li>
-                        <li class="menu-board__item"><span>可樂</span><span>$35</span></li>
-                        <li class="menu-board__item"><span>紅茶</span><span>$30</span></li>
-                        <li class="menu-board__item"><span>綠茶</span><span>$30</span></li>
-                        <li class="menu-board__item"><span>泰奶</span><span>$75</span></li>
-                    </ul>
-                </div>
-            </div>
-            <h3 class="menu-actions-title">快速點餐</h3>
             <div class="menu-grid" id="menu"></div>
         </section>
 
@@ -566,6 +468,12 @@
         const resetOrder = () => {
             orderMap.clear();
             renderOrder();
+        const calcTotal = () => {
+            let total = 0;
+            orderMap.forEach(item => {
+                total += item.price * item.quantity;
+            });
+            return total;
         };
 
         const renderOrder = () => {

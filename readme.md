@@ -21,7 +21,7 @@
 
 以瀏覽器開啟 `index.html` 即可使用，無需額外安裝。
 
-如需保留此次介面版本，可參考 `backups/index-original.html` 中備份的原始程式碼。
+如想看之前的版本，可參考 `backups/index-original.html` 中備份的原始程式碼。
 
 另外，如果想要使用或優化的話，歡迎fork走:D
 
